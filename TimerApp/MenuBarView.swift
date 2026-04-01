@@ -2,19 +2,11 @@ import SwiftUI
 
 struct MenuBarView: View {
     @EnvironmentObject var timerManager: TimerManager
-    @State private var showAddTimer = false
     @State private var showLimitSettings = false
 
     var body: some View {
         VStack(spacing: 0) {
-            if showAddTimer {
-                AddTimerView { name, duration in
-                    timerManager.addTimer(name: name, duration: duration)
-                    showAddTimer = false
-                } onCancel: {
-                    showAddTimer = false
-                }
-            } else if showLimitSettings {
+            if showLimitSettings {
                 LimitSettingsView(timerManager: timerManager) {
                     showLimitSettings = false
                 }
@@ -22,8 +14,6 @@ struct MenuBarView: View {
                 headerView
                 Divider()
                 limitView
-                Divider()
-                timerListView
                 Divider()
                 stopButton
             }
@@ -37,15 +27,8 @@ struct MenuBarView: View {
                         OvertimeAlertView(
                             title: "Dagelijkse limiet bereikt!",
                             message: "Je hebt je dagelijkse limiet van \(timerManager.formatMinutes(timerManager.dailyLimitMinutes)) bereikt. Wil je doorgaan?",
-                            onExtend: { minutes in
-                                timerManager.extendDailyLimit(by: minutes)
-                            },
-                            onDismiss: {
-                                timerManager.showDailyLimitAlert = false
-                                if let active = timerManager.activeTimer {
-                                    timerManager.pause(active)
-                                }
-                            }
+                            onExtend: { minutes in timerManager.extendDailyLimit(by: minutes) },
+                            onDismiss: { timerManager.showDailyLimitAlert = false }
                         )
                     }
             }
@@ -57,15 +40,8 @@ struct MenuBarView: View {
                         OvertimeAlertView(
                             title: "Sessie limiet bereikt!",
                             message: "Je huidige sessie heeft de limiet van \(timerManager.formatMinutes(timerManager.sessionLimitMinutes)) bereikt. Wil je doorgaan?",
-                            onExtend: { minutes in
-                                timerManager.extendSessionLimit(by: minutes)
-                            },
-                            onDismiss: {
-                                timerManager.showSessionLimitAlert = false
-                                if let active = timerManager.activeTimer {
-                                    timerManager.pause(active)
-                                }
-                            }
+                            onExtend: { minutes in timerManager.extendSessionLimit(by: minutes) },
+                            onDismiss: { timerManager.showSessionLimitAlert = false }
                         )
                     }
             }
@@ -74,22 +50,9 @@ struct MenuBarView: View {
 
     private var headerView: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Timers")
-                    .font(.headline)
-                HStack(spacing: 6) {
-                    Image(systemName: "sum")
-                        .foregroundStyle(.secondary)
-                    Text(timerManager.totalActiveString())
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                    Text("totaal actief")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-            }
+            Text("Tijdstracker")
+                .font(.headline)
             Spacer()
-
             Button {
                 showLimitSettings = true
             } label: {
@@ -98,15 +61,6 @@ struct MenuBarView: View {
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
-
-            Button {
-                showAddTimer = true
-            } label: {
-                Image(systemName: "plus.circle.fill")
-                    .font(.title2)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(Color.accentColor)
         }
         .padding(.horizontal)
         .padding(.vertical, 10)
@@ -156,44 +110,6 @@ struct MenuBarView: View {
         .padding(.vertical, 8)
     }
 
-    private var timerListView: some View {
-        Group {
-            if timerManager.timers.isEmpty {
-                emptyStateView
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 8) {
-                        ForEach(timerManager.timers) { timer in
-                            TimerRowView(timer: timer,
-                                         onStart: { timerManager.start(timer) },
-                                         onPause: { timerManager.pause(timer) },
-                                         onReset: { timerManager.reset(timer) },
-                                         onDelete: { timerManager.remove(timer) })
-                        }
-                    }
-                    .padding(10)
-                }
-                .frame(maxHeight: 300)
-            }
-        }
-    }
-
-    private var emptyStateView: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "timer")
-                .font(.system(size: 36))
-                .foregroundStyle(.secondary)
-            Text("Geen timers")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text("Gebruik + of een snelknop hieronder")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 30)
-    }
-
     private var stopButton: some View {
         HStack {
             Spacer()
@@ -206,77 +122,6 @@ struct MenuBarView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-    }
-}
-
-struct TimerRowView: View {
-    @ObservedObject var timer: WorkTimer
-    let onStart: () -> Void
-    let onPause: () -> Void
-    let onReset: () -> Void
-    let onDelete: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(timer.name)
-                    .font(.subheadline.weight(.semibold))
-                Spacer()
-                Button(action: onDelete) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            HStack(alignment: .center) {
-                Text(timer.remainingTimeString)
-                    .font(.system(.title, design: .monospaced))
-                    .foregroundStyle(timerColor)
-                Spacer()
-                controlButtons
-            }
-
-            ProgressView(value: timer.progress)
-                .tint(timerColor)
-        }
-        .padding(12)
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(10)
-    }
-
-    private var timerColor: Color {
-        if timer.isOvertime { return .red }
-        if timer.isRunning { return .accentColor }
-        return .primary
-    }
-
-    @ViewBuilder
-    private var controlButtons: some View {
-        switch timer.state {
-        case .idle:
-            Button("Start") { onStart() }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-        case .paused:
-            HStack {
-                Button("Start") { onStart() }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-                Button("Reset") { onReset() }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-            }
-        case .running:
-            HStack {
-                Button("Pauze") { onPause() }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                Button("Reset") { onReset() }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-            }
-        }
     }
 }
 

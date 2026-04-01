@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import UserNotifications
 import IOKit
+import CoreAudio
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
@@ -57,7 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ticker = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             let idle = self.systemIdleTime()
-            let active = idle < 60
+            let active = idle < 60 || self.isAudioActive()
 
             if active != self.isUserActive {
                 self.isUserActive = active
@@ -68,7 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             if active {
                 self.timerManager.tickActivity()
-                self.statusItem?.button?.title = self.timerManager.activeDisplayTitle()
+                self.statusItem?.button?.title = "⏱"
             } else {
                 self.statusItem?.button?.title = "⏸"
             }
@@ -100,6 +101,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func systemWake() {
         // Ticker pikt de activiteit op bij de volgende tick
+    }
+
+    private func isAudioActive() -> Bool {
+        return isAudioDeviceRunning(selector: kAudioHardwarePropertyDefaultInputDevice)
+            || isAudioDeviceRunning(selector: kAudioHardwarePropertyDefaultOutputDevice)
+    }
+
+    private func isAudioDeviceRunning(selector: AudioObjectPropertySelector) -> Bool {
+        var deviceID = AudioDeviceID(0)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var addr = AudioObjectPropertyAddress(
+            mSelector: selector,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        guard AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size, &deviceID
+        ) == noErr, deviceID != kAudioDeviceUnknown else { return false }
+
+        var isRunning: UInt32 = 0
+        size = UInt32(MemoryLayout<UInt32>.size)
+        addr = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyDeviceIsRunningSomewhere,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        guard AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, &isRunning) == noErr else { return false }
+        return isRunning != 0
     }
 
     private func systemIdleTime() -> TimeInterval {
