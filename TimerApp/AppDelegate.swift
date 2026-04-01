@@ -116,15 +116,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func isAudioActive() -> Bool {
-        return isAudioLevelAboveThreshold(selector: kAudioHardwarePropertyDefaultInputDevice)
-            || isAudioLevelAboveThreshold(selector: kAudioHardwarePropertyDefaultOutputDevice)
+        return isMicrophoneActive()
     }
 
-    private func isAudioDeviceRunning(selector: AudioObjectPropertySelector) -> Bool {
+    private func isMicrophoneActive() -> Bool {
         var deviceID = AudioDeviceID(0)
         var size = UInt32(MemoryLayout<AudioDeviceID>.size)
         var addr = AudioObjectPropertyAddress(
-            mSelector: selector,
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
@@ -141,49 +140,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         guard AudioObjectGetPropertyData(deviceID, &addr, 0, nil, &size, &isRunning) == noErr else { return false }
         return isRunning != 0
-    }
-
-    private func isAudioLevelAboveThreshold(selector: AudioObjectPropertySelector) -> Bool {
-        var deviceID = AudioDeviceID(0)
-        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
-        var addr = AudioObjectPropertyAddress(
-            mSelector: selector,
-            mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: kAudioObjectPropertyElementMain
-        )
-        guard AudioObjectGetPropertyData(
-            AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size, &deviceID
-        ) == noErr, deviceID != kAudioDeviceUnknown else { return false }
-
-        let scope: AudioObjectPropertyScope = (selector == kAudioHardwarePropertyDefaultInputDevice)
-            ? kAudioObjectPropertyScopeInput
-            : kAudioObjectPropertyScopeOutput
-
-        var levelAddr = AudioObjectPropertyAddress(
-            mSelector: kAudioDevicePropertyVolumeScalar,
-            mScope: scope,
-            mElement: kAudioObjectPropertyElementMain
-        )
-
-        // Check eerst of het apparaat daadwerkelijk draait
-        var isRunning: UInt32 = 0
-        var runSize = UInt32(MemoryLayout<UInt32>.size)
-        var runAddr = AudioObjectPropertyAddress(
-            mSelector: kAudioDevicePropertyDeviceIsRunningSomewhere,
-            mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: kAudioObjectPropertyElementMain
-        )
-        guard AudioObjectGetPropertyData(deviceID, &runAddr, 0, nil, &runSize, &isRunning) == noErr,
-              isRunning != 0 else { return false }
-
-        // Check of het volume boven 0 staat (stille apparaten tellen niet mee)
-        var volume: Float32 = 0
-        var volSize = UInt32(MemoryLayout<Float32>.size)
-        guard AudioObjectGetPropertyData(deviceID, &levelAddr, 0, nil, &volSize, &volume) == noErr else {
-            // Volume niet opvraagbaar — val terug op alleen de running check
-            return isRunning != 0
-        }
-        return volume > 0.01
     }
 
     private func systemIdleTime() -> TimeInterval {
