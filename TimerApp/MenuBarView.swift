@@ -83,8 +83,9 @@ struct MenuBarView: View {
                 }
                 Spacer()
                 ProgressView(value: timerManager.dailyProgressPercentage())
+                    .progressViewStyle(.linear)
                     .frame(width: 60)
-                    .tint(timerManager.isDailyLimitExceeded ? .red : .blue)
+                    .accentColor(timerManager.isDailyLimitExceeded ? .red : .blue)
             }
 
             HStack {
@@ -102,8 +103,9 @@ struct MenuBarView: View {
                 }
                 Spacer()
                 ProgressView(value: timerManager.sessionProgressPercentage())
+                    .progressViewStyle(.linear)
                     .frame(width: 60)
-                    .tint(timerManager.isSessionLimitExceeded ? .red : .orange)
+                    .accentColor(timerManager.isSessionLimitExceeded ? .red : .orange)
             }
         }
         .padding(.horizontal)

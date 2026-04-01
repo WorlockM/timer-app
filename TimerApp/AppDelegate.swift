@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import UserNotifications
 import IOKit
+import IOKit.pwr_mgt
 import CoreAudio
 
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -59,7 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ticker = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             let idle = self.systemIdleTime()
-            let active = idle < 60 || self.isAudioActive()
+            let active = idle < 60 || self.isAudioActive() || self.isVideoPlaying()
 
             if active != self.isUserActive {
                 self.isUserActive = active
@@ -117,6 +118,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func isAudioActive() -> Bool {
         return isMicrophoneActive()
+    }
+
+    private func isVideoPlaying() -> Bool {
+        var status: Unmanaged<CFDictionary>?
+        guard IOPMCopyAssertionsStatus(&status) == kIOReturnSuccess,
+              let dict = status?.takeRetainedValue() as? [String: Int] else { return false }
+        let count = dict[kIOPMAssertPreventUserIdleDisplaySleep as String] ?? 0
+        return count > 0
     }
 
     private func isMicrophoneActive() -> Bool {
