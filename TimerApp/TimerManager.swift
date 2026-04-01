@@ -13,6 +13,10 @@ final class TimerManager: ObservableObject {
         didSet { UserDefaults.standard.set(sessionLimitMinutes, forKey: "sessionLimitMinutes") }
     }
 
+    @Published var sessionResetMinutes: Int = UserDefaults.standard.object(forKey: "sessionResetMinutes") as? Int ?? 15 {
+        didSet { UserDefaults.standard.set(sessionResetMinutes, forKey: "sessionResetMinutes") }
+    }
+
     @Published var currentSessionSeconds: TimeInterval = 0
     @Published var dailySeconds: TimeInterval = 0 {
         didSet {

@@ -10,6 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let timerManager = TimerManager()
     private var ticker: Timer?
     private var isUserActive = false
+    private var inactiveStartTime: Date?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
@@ -63,7 +64,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if active != self.isUserActive {
                 self.isUserActive = active
                 if active {
-                    self.timerManager.resetSession()
+                    if let start = self.inactiveStartTime {
+                        let inactiveDuration = Date().timeIntervalSince(start)
+                        if inactiveDuration >= TimeInterval(self.timerManager.sessionResetMinutes * 60) {
+                            self.timerManager.resetSession()
+                        }
+                    }
+                    self.inactiveStartTime = nil
+                } else {
+                    self.inactiveStartTime = Date()
                 }
             }
 
@@ -95,7 +104,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func systemSleep() {
-        isUserActive = false
+        if isUserActive {
+            isUserActive = false
+            inactiveStartTime = Date()
+        }
         statusItem?.button?.title = "⏸"
     }
 

@@ -131,6 +131,7 @@ struct LimitSettingsView: View {
 
     @State private var dailyMinutes: Int = 300
     @State private var sessionMinutes: Int = 75
+    @State private var sessionResetMinutes: Int = 15
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -155,6 +156,17 @@ struct LimitSettingsView: View {
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 100)
                 Text("\(sessionMinutes) minuten = \(timerManager.formatMinutes(sessionMinutes))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Label("Sessie reset na inactiviteit", systemImage: "pause.circle")
+                    .font(.subheadline.weight(.medium))
+                TextField("Minuten", value: $sessionResetMinutes, format: .number)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 100)
+                Text("Reset sessie na \(timerManager.formatMinutes(sessionResetMinutes)) inactiviteit")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -185,11 +197,12 @@ struct LimitSettingsView: View {
                 Button("Opslaan") {
                     timerManager.dailyLimitMinutes = dailyMinutes
                     timerManager.sessionLimitMinutes = sessionMinutes
+                    timerManager.sessionResetMinutes = sessionResetMinutes
                     onDismiss()
                 }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.return)
-                .disabled(dailyMinutes <= 0 || sessionMinutes <= 0)
+                .disabled(dailyMinutes <= 0 || sessionMinutes <= 0 || sessionResetMinutes <= 0)
             }
         }
         .padding(20)
@@ -197,6 +210,7 @@ struct LimitSettingsView: View {
         .onAppear {
             dailyMinutes = timerManager.dailyLimitMinutes
             sessionMinutes = timerManager.sessionLimitMinutes
+            sessionResetMinutes = timerManager.sessionResetMinutes
         }
     }
 }
