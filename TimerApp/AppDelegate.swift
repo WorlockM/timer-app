@@ -117,7 +117,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func isAudioActive() -> Bool {
         return isAudioDeviceRunning(selector: kAudioHardwarePropertyDefaultInputDevice)
-            || isAudioDeviceRunning(selector: kAudioHardwarePropertyDefaultOutputDevice)
     }
 
     private func isAudioDeviceRunning(selector: AudioObjectPropertySelector) -> Bool {
