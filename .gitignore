@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Xcode gebruikersdata
+TimerApp.xcodeproj/xcuserdata/
+TimerApp.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserstate
+
+# Build output
+DerivedData/
+build/
+
+# Claude
+.claude/

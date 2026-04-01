@@ -38,20 +38,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA00000000000000000004AB = {
-			isa = PBXGroup;
-			children = (
-				AA00000000000000000005AB /* TimerApp */,
-				AA00000000000000000003AB /* Products */,
-			);
-			sourceTree = "<group>";
-		};
 		AA00000000000000000003AB /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				AA00000000000000000006AB /* TimerApp.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AA00000000000000000004AB = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000005AB /* TimerApp */,
+				AA00000000000000000003AB /* Products */,
+			);
 			sourceTree = "<group>";
 		};
 		AA00000000000000000005AB /* TimerApp */ = {
@@ -326,7 +326,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = AA00000000000000000001AB /* Project object */;
 }
