@@ -19,6 +19,7 @@ struct MenuBarView: View {
             }
         }
         .frame(width: 300)
+        .frame(minHeight: 260)
         .overlay {
             if timerManager.showDailyLimitAlert {
                 Color.black.opacity(0.3)
@@ -100,6 +101,11 @@ struct MenuBarView: View {
                     Text(timerManager.formatTime(timerManager.sessionRemainingSeconds))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(timerManager.isSessionLimitExceeded ? Color.red : Color.primary)
+                    if timerManager.sessionExtensionMinutes > 0 && timerManager.sessionOriginalOvertimeSeconds > 0 {
+                        Text("+\(timerManager.formatTime(timerManager.sessionOriginalOvertimeSeconds)) over limiet")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.orange)
+                    }
                 }
                 Spacer()
                 ProgressView(value: timerManager.sessionProgressPercentage())
@@ -238,13 +244,16 @@ struct OvertimeAlertView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 Button("5 min") { onExtend(5) }
                     .buttonStyle(.bordered)
+                    .controlSize(.small)
                 Button("10 min") { onExtend(10) }
                     .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
                 Button("Stop") { onDismiss() }
                     .buttonStyle(.bordered)
+                    .controlSize(.small)
                     .foregroundStyle(.red)
             }
         }

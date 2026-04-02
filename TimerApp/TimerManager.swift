@@ -85,6 +85,10 @@ final class TimerManager: ObservableObject {
         TimeInterval(effectiveSessionLimitMinutes * 60) - currentSessionSeconds
     }
 
+    var sessionOriginalOvertimeSeconds: TimeInterval {
+        currentSessionSeconds - TimeInterval(sessionLimitMinutes * 60)
+    }
+
     var isDailyLimitExceeded: Bool {
         dailySeconds >= TimeInterval(dailyLimitMinutes * 60)
     }
