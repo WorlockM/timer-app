@@ -39,7 +39,7 @@ struct MenuBarView: View {
                     .overlay {
                         OvertimeAlertView(
                             title: "Sessie limiet bereikt!",
-                            message: "Je huidige sessie heeft de limiet van \(timerManager.formatMinutes(timerManager.sessionLimitMinutes)) bereikt. Wil je doorgaan?",
+                            message: "Je huidige sessie heeft de limiet van \(timerManager.formatMinutes(timerManager.effectiveSessionLimitMinutes)) bereikt. Wil je doorgaan?",
                             onExtend: { minutes in timerManager.extendSessionLimit(by: minutes) },
                             onDismiss: { timerManager.showSessionLimitAlert = false }
                         )

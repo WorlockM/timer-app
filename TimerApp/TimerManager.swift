@@ -18,6 +18,8 @@ final class TimerManager: ObservableObject {
     }
 
     @Published var currentSessionSeconds: TimeInterval = 0
+    private(set) var sessionExtensionMinutes: Int = 0
+
     @Published var dailySeconds: TimeInterval = 0 {
         didSet {
             UserDefaults.standard.set(dailySeconds, forKey: "dailySeconds")
@@ -56,12 +58,13 @@ final class TimerManager: ObservableObject {
     }
 
     func extendSessionLimit(by minutes: Int) {
-        sessionLimitMinutes += minutes
+        sessionExtensionMinutes += minutes
         showSessionLimitAlert = false
     }
 
     func resetSession() {
         currentSessionSeconds = 0
+        sessionExtensionMinutes = 0
         showSessionLimitAlert = false
     }
 
@@ -74,8 +77,12 @@ final class TimerManager: ObservableObject {
         TimeInterval(dailyLimitMinutes * 60) - dailySeconds
     }
 
+    var effectiveSessionLimitMinutes: Int {
+        sessionLimitMinutes + sessionExtensionMinutes
+    }
+
     var sessionRemainingSeconds: TimeInterval {
-        TimeInterval(sessionLimitMinutes * 60) - currentSessionSeconds
+        TimeInterval(effectiveSessionLimitMinutes * 60) - currentSessionSeconds
     }
 
     var isDailyLimitExceeded: Bool {
@@ -83,7 +90,7 @@ final class TimerManager: ObservableObject {
     }
 
     var isSessionLimitExceeded: Bool {
-        currentSessionSeconds >= TimeInterval(sessionLimitMinutes * 60)
+        currentSessionSeconds >= TimeInterval(effectiveSessionLimitMinutes * 60)
     }
 
     func dailyProgressPercentage() -> Double {
@@ -93,7 +100,7 @@ final class TimerManager: ObservableObject {
     }
 
     func sessionProgressPercentage() -> Double {
-        let limit = TimeInterval(sessionLimitMinutes * 60)
+        let limit = TimeInterval(effectiveSessionLimitMinutes * 60)
         guard limit > 0 else { return 0 }
         return min(1.0, currentSessionSeconds / limit)
     }
@@ -124,10 +131,10 @@ final class TimerManager: ObservableObject {
 
     private func checkLimits() {
         let dailyLimitSeconds = TimeInterval(dailyLimitMinutes * 60)
-        let sessionLimitSeconds = TimeInterval(sessionLimitMinutes * 60)
         if dailySeconds >= dailyLimitSeconds && !showDailyLimitAlert {
             showDailyLimitAlert = true
         }
+        let sessionLimitSeconds = TimeInterval(effectiveSessionLimitMinutes * 60)
         if currentSessionSeconds >= sessionLimitSeconds && !showSessionLimitAlert {
             showSessionLimitAlert = true
         }

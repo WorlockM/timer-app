@@ -4,6 +4,7 @@ import UserNotifications
 import IOKit
 import IOKit.pwr_mgt
 import CoreAudio
+import Combine
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
@@ -12,6 +13,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var ticker: Timer?
     private var isUserActive = false
     private var inactiveStartTime: Date?
+    private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
@@ -19,6 +21,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupPopover()
         startTicker()
         setupSystemNotifications()
+        setupLimitAlerts()
+    }
+
+    // MARK: - Limit alerts
+
+    private func setupLimitAlerts() {
+        timerManager.$showSessionLimitAlert
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] show in
+                if show { self?.openPopover() }
+            }
+            .store(in: &cancellables)
+
+        timerManager.$showDailyLimitAlert
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] show in
+                if show { self?.openPopover() }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func openPopover() {
+        guard let button = statusItem?.button, let popover = popover else { return }
+        if !popover.isShown {
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
     // MARK: - Menubar
