@@ -6,7 +6,21 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if showLimitSettings {
+            if timerManager.showDailyLimitAlert {
+                OvertimeAlertView(
+                    title: "Dagelijkse limiet bereikt!",
+                    message: "Je hebt je dagelijkse limiet van \(timerManager.formatMinutes(timerManager.dailyLimitMinutes)) bereikt. Wil je doorgaan?",
+                    onExtend: { minutes in timerManager.extendDailyLimit(by: minutes) },
+                    onDismiss: { timerManager.showDailyLimitAlert = false }
+                )
+            } else if timerManager.showSessionLimitAlert {
+                OvertimeAlertView(
+                    title: "Sessie limiet bereikt!",
+                    message: "Je huidige sessie heeft de limiet van \(timerManager.formatMinutes(timerManager.effectiveSessionLimitMinutes)) bereikt. Wil je doorgaan?",
+                    onExtend: { minutes in timerManager.extendSessionLimit(by: minutes) },
+                    onDismiss: { timerManager.showSessionLimitAlert = false }
+                )
+            } else if showLimitSettings {
                 LimitSettingsView(timerManager: timerManager) {
                     showLimitSettings = false
                 }
@@ -19,34 +33,6 @@ struct MenuBarView: View {
             }
         }
         .frame(width: 300)
-        .frame(minHeight: 260)
-        .overlay {
-            if timerManager.showDailyLimitAlert {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .overlay {
-                        OvertimeAlertView(
-                            title: "Dagelijkse limiet bereikt!",
-                            message: "Je hebt je dagelijkse limiet van \(timerManager.formatMinutes(timerManager.dailyLimitMinutes)) bereikt. Wil je doorgaan?",
-                            onExtend: { minutes in timerManager.extendDailyLimit(by: minutes) },
-                            onDismiss: { timerManager.showDailyLimitAlert = false }
-                        )
-                    }
-            }
-
-            if timerManager.showSessionLimitAlert {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .overlay {
-                        OvertimeAlertView(
-                            title: "Sessie limiet bereikt!",
-                            message: "Je huidige sessie heeft de limiet van \(timerManager.formatMinutes(timerManager.effectiveSessionLimitMinutes)) bereikt. Wil je doorgaan?",
-                            onExtend: { minutes in timerManager.extendSessionLimit(by: minutes) },
-                            onDismiss: { timerManager.showSessionLimitAlert = false }
-                        )
-                    }
-            }
-        }
     }
 
     private var headerView: some View {

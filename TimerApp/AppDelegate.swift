@@ -63,11 +63,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupPopover() {
         let popover = NSPopover()
-        popover.contentSize = NSSize(width: 300, height: 420)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(
+        let hostingController = NSHostingController(
             rootView: MenuBarView().environmentObject(timerManager)
         )
+        hostingController.sizingOptions = .preferredContentSize
+        popover.contentViewController = hostingController
         self.popover = popover
     }
 
