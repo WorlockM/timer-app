@@ -67,6 +67,11 @@ struct MenuBarView: View {
                     Text(timerManager.formatTime(timerManager.dailyRemainingSeconds))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(timerManager.isDailyLimitExceeded ? Color.red : Color.primary)
+                    if timerManager.dailyExtensionMinutes > 0 && timerManager.dailyOriginalOvertimeSeconds > 0 {
+                        Text("+\(timerManager.formatTime(timerManager.dailyOriginalOvertimeSeconds)) over limiet")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.blue)
+                    }
                 }
                 Spacer()
                 ProgressView(value: timerManager.dailyProgressPercentage())

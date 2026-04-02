@@ -19,6 +19,7 @@ final class TimerManager: ObservableObject {
 
     @Published var currentSessionSeconds: TimeInterval = 0
     private(set) var sessionExtensionMinutes: Int = 0
+    private(set) var dailyExtensionMinutes: Int = 0
 
     @Published var dailySeconds: TimeInterval = 0 {
         didSet {
@@ -53,7 +54,7 @@ final class TimerManager: ObservableObject {
     }
 
     func extendDailyLimit(by minutes: Int) {
-        dailyLimitMinutes += minutes
+        dailyExtensionMinutes += minutes
         showDailyLimitAlert = false
     }
 
@@ -70,11 +71,20 @@ final class TimerManager: ObservableObject {
 
     func resetDaily() {
         dailySeconds = 0
+        dailyExtensionMinutes = 0
         showDailyLimitAlert = false
     }
 
+    var effectiveDailyLimitMinutes: Int {
+        dailyLimitMinutes + dailyExtensionMinutes
+    }
+
     var dailyRemainingSeconds: TimeInterval {
-        TimeInterval(dailyLimitMinutes * 60) - dailySeconds
+        TimeInterval(effectiveDailyLimitMinutes * 60) - dailySeconds
+    }
+
+    var dailyOriginalOvertimeSeconds: TimeInterval {
+        dailySeconds - TimeInterval(dailyLimitMinutes * 60)
     }
 
     var effectiveSessionLimitMinutes: Int {
@@ -90,7 +100,7 @@ final class TimerManager: ObservableObject {
     }
 
     var isDailyLimitExceeded: Bool {
-        dailySeconds >= TimeInterval(dailyLimitMinutes * 60)
+        dailySeconds >= TimeInterval(effectiveDailyLimitMinutes * 60)
     }
 
     var isSessionLimitExceeded: Bool {
@@ -98,7 +108,7 @@ final class TimerManager: ObservableObject {
     }
 
     func dailyProgressPercentage() -> Double {
-        let limit = TimeInterval(dailyLimitMinutes * 60)
+        let limit = TimeInterval(effectiveDailyLimitMinutes * 60)
         guard limit > 0 else { return 0 }
         return min(1.0, dailySeconds / limit)
     }
@@ -134,7 +144,7 @@ final class TimerManager: ObservableObject {
     }
 
     private func checkLimits() {
-        let dailyLimitSeconds = TimeInterval(dailyLimitMinutes * 60)
+        let dailyLimitSeconds = TimeInterval(effectiveDailyLimitMinutes * 60)
         if dailySeconds >= dailyLimitSeconds && !showDailyLimitAlert {
             showDailyLimitAlert = true
         }
