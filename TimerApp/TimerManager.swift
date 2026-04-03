@@ -32,6 +32,7 @@ final class TimerManager: ObservableObject {
     @Published var showSessionLimitAlert = false
     var dailyAlertDismissed = false
     var sessionAlertDismissed = false
+    @Published var isManuallyPaused = false
 
     private var dailyTimer: Timer?
 
@@ -69,11 +70,13 @@ final class TimerManager: ObservableObject {
 
     func dismissDailyAlert() {
         dailyAlertDismissed = true
+        isManuallyPaused = true
         showDailyLimitAlert = false
     }
 
     func dismissSessionAlert() {
         sessionAlertDismissed = true
+        isManuallyPaused = true
         showSessionLimitAlert = false
     }
 

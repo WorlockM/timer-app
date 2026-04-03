@@ -108,9 +108,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
             if active {
-                self.timerManager.tickActivity()
-                self.statusItem?.button?.title = "⏱"
+                if self.timerManager.isManuallyPaused {
+                    self.statusItem?.button?.title = "⏸"
+                } else {
+                    self.timerManager.tickActivity()
+                    self.statusItem?.button?.title = "⏱"
+                }
             } else {
+                self.timerManager.isManuallyPaused = false
                 self.statusItem?.button?.title = "⏸"
             }
         }
