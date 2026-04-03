@@ -11,14 +11,14 @@ struct MenuBarView: View {
                     title: "Dagelijkse limiet bereikt!",
                     message: "Je hebt je dagelijkse limiet van \(timerManager.formatMinutes(timerManager.dailyLimitMinutes)) bereikt. Wil je doorgaan?",
                     onExtend: { minutes in timerManager.extendDailyLimit(by: minutes) },
-                    onDismiss: { timerManager.showDailyLimitAlert = false }
+                    onDismiss: { timerManager.dismissDailyAlert() }
                 )
             } else if timerManager.showSessionLimitAlert {
                 OvertimeAlertView(
                     title: "Sessie limiet bereikt!",
                     message: "Je huidige sessie heeft de limiet van \(timerManager.formatMinutes(timerManager.effectiveSessionLimitMinutes)) bereikt. Wil je doorgaan?",
                     onExtend: { minutes in timerManager.extendSessionLimit(by: minutes) },
-                    onDismiss: { timerManager.showSessionLimitAlert = false }
+                    onDismiss: { timerManager.dismissSessionAlert() }
                 )
             } else if showLimitSettings {
                 LimitSettingsView(timerManager: timerManager) {
@@ -240,7 +240,7 @@ struct OvertimeAlertView: View {
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                 Button("10 min") { onExtend(10) }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.bordered)
                     .controlSize(.small)
                 Button("Stop") { onDismiss() }
                     .buttonStyle(.bordered)

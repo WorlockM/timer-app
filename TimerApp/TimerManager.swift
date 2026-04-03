@@ -30,6 +30,8 @@ final class TimerManager: ObservableObject {
 
     @Published var showDailyLimitAlert = false
     @Published var showSessionLimitAlert = false
+    var dailyAlertDismissed = false
+    var sessionAlertDismissed = false
 
     private var dailyTimer: Timer?
 
@@ -55,23 +57,37 @@ final class TimerManager: ObservableObject {
 
     func extendDailyLimit(by minutes: Int) {
         dailyExtensionMinutes += minutes
+        dailyAlertDismissed = false
         showDailyLimitAlert = false
     }
 
     func extendSessionLimit(by minutes: Int) {
         sessionExtensionMinutes += minutes
+        sessionAlertDismissed = false
+        showSessionLimitAlert = false
+    }
+
+    func dismissDailyAlert() {
+        dailyAlertDismissed = true
+        showDailyLimitAlert = false
+    }
+
+    func dismissSessionAlert() {
+        sessionAlertDismissed = true
         showSessionLimitAlert = false
     }
 
     func resetSession() {
         currentSessionSeconds = 0
         sessionExtensionMinutes = 0
+        sessionAlertDismissed = false
         showSessionLimitAlert = false
     }
 
     func resetDaily() {
         dailySeconds = 0
         dailyExtensionMinutes = 0
+        dailyAlertDismissed = false
         showDailyLimitAlert = false
     }
 
@@ -145,11 +161,11 @@ final class TimerManager: ObservableObject {
 
     private func checkLimits() {
         let dailyLimitSeconds = TimeInterval(effectiveDailyLimitMinutes * 60)
-        if dailySeconds >= dailyLimitSeconds && !showDailyLimitAlert {
+        if dailySeconds >= dailyLimitSeconds && !showDailyLimitAlert && !dailyAlertDismissed {
             showDailyLimitAlert = true
         }
         let sessionLimitSeconds = TimeInterval(effectiveSessionLimitMinutes * 60)
-        if currentSessionSeconds >= sessionLimitSeconds && !showSessionLimitAlert {
+        if currentSessionSeconds >= sessionLimitSeconds && !showSessionLimitAlert && !sessionAlertDismissed {
             showSessionLimitAlert = true
         }
     }
