@@ -239,13 +239,15 @@ struct OvertimeAlertView: View {
                 Button("5 min") { onExtend(5) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
+                    .tint(.orange)
                 Button("10 min") { onExtend(10) }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
+                    .tint(.orange)
                 Button("Stop") { onDismiss() }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .foregroundStyle(.red)
+                    .tint(.orange)
             }
         }
         .padding(24)
