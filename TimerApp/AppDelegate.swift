@@ -90,7 +90,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ticker = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             let idle = self.systemIdleTime()
-            let active = idle < 60 || self.isAudioActive() || self.isVideoPlaying()
+            let idleThreshold: TimeInterval = self.timerManager.stopPressed ? 5 : 60
+            let active = idle < idleThreshold || self.isAudioActive() || self.isVideoPlaying()
 
             if active != self.isUserActive {
                 self.isUserActive = active
@@ -103,19 +104,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                     self.inactiveStartTime = nil
                 } else {
+                    self.timerManager.stopPressed = false
                     self.inactiveStartTime = Date()
                 }
             }
 
             if active {
-                if self.timerManager.isManuallyPaused {
-                    self.statusItem?.button?.title = "⏸"
-                } else {
-                    self.timerManager.tickActivity()
-                    self.statusItem?.button?.title = "⏱"
-                }
+                self.timerManager.tickActivity()
+                self.statusItem?.button?.title = "⏱"
             } else {
-                self.timerManager.isManuallyPaused = false
                 self.statusItem?.button?.title = "⏸"
             }
         }
