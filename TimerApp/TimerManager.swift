@@ -51,6 +51,11 @@ final class TimerManager: ObservableObject {
 
     /// Wordt elke seconde aangeroepen vanuit AppDelegate zolang de gebruiker actief is.
     func tickActivity() {
+        // Reset dagelijkse teller als het een nieuwe dag is (vangnet naast midnight-timer)
+        let lastUpdate = UserDefaults.standard.object(forKey: "lastDailyUpdate") as? Date
+        if let lastUpdate = lastUpdate, !Calendar.current.isDateInToday(lastUpdate) {
+            resetDaily()
+        }
         dailySeconds += 1
         currentSessionSeconds += 1
         checkLimits()

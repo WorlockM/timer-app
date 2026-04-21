@@ -90,8 +90,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ticker = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             let idle = self.systemIdleTime()
-            let idleThreshold: TimeInterval = self.timerManager.stopPressed ? 5 : 60
-            let active = idle < idleThreshold || self.isAudioActive() || self.isVideoPlaying()
+            let physicallyActive = idle < 60 || self.isAudioActive() || self.isVideoPlaying()
+
+            // Als Stop gedrukt is, direct inactief markeren; reset vlag zodra fysiek inactief
+            if !physicallyActive {
+                self.timerManager.stopPressed = false
+            }
+            let active = physicallyActive && !self.timerManager.stopPressed
 
             if active != self.isUserActive {
                 self.isUserActive = active
@@ -104,7 +109,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                     self.inactiveStartTime = nil
                 } else {
-                    self.timerManager.stopPressed = false
                     self.inactiveStartTime = Date()
                 }
             }
